@@ -1,0 +1,12 @@
+# Flutter/Dart
+.dart_tool/
+build/
+.pub/
+.pub-spec.lock
+
+# Python/Django
+__pycache__/
+*.pyc
+venv/
+db.sqlite3
+.env
