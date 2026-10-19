@@ -32,7 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _fetchMessages() async {
-    final url = Uri.parse('http://127.0.0.1:8000/api/chat/conversations/${widget.conversationId}/messages/');
+    final url = Uri.parse('https://p2p-real-estate-backend.onrender.com/api/chat/conversations/${widget.conversationId}/messages/');
     try {
       final response = await http.get(
         url,
@@ -58,7 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     _messageController.clear();
-    final url = Uri.parse('http://127.0.0.1:8000/api/chat/conversations/${widget.conversationId}/messages/');
+    final url = Uri.parse('https://p2p-real-estate-backend.onrender.com/api/chat/conversations/${widget.conversationId}/messages/');
 
     try {
       final response = await http.post(

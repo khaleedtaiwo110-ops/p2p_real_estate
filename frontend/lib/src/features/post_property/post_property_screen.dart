@@ -24,7 +24,7 @@ class _PostPropertyScreenState extends State<PostPropertyScreen> {
   bool _requiresAgent = false;
   bool _isSubmitting = false;
 
-  final String _apiUrl = 'http://127.0.0.1:8000/api/properties/';
+  final String _apiUrl = 'https://p2p-real-estate-backend.onrender.com/api/properties/';
 
   Future<void> _submitProperty() async {
     if (!_formKey.currentState!.validate()) return;

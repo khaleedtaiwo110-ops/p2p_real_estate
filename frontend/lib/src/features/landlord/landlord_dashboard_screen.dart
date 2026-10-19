@@ -37,8 +37,8 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
 
   // Base URL resolver based on platform environment
   String get _baseUrl {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api';
-    return Platform.isAndroid ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api';
+    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api';
+    return Platform.isAndroid ? 'https://p2p-real-estate-backend.onrender.com/api' : 'https://p2p-real-estate-backend.onrender.com/api';
   }
 
   // Fetch properties from backend API with JWT Authorization header
@@ -46,8 +46,8 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
     setState(() => _isLoading = true);
 
     final String baseUrl = kIsWeb 
-        ? 'http://127.0.0.1:8000/api' 
-        : (Platform.isAndroid ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api');
+        ? 'https://p2p-real-estate-backend.onrender.com/api' 
+        : (Platform.isAndroid ? 'https://p2p-real-estate-backend.onrender.com/api' : 'https://p2p-real-estate-backend.onrender.com/api');
 
     // 1. Get the logged-in user's token
     final String? token = await StorageService.getToken();

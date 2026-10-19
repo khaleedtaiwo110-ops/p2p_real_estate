@@ -42,9 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Base URL Resolver
   String get _baseUrl {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api'; // Android Emulator alias
-    return 'http://127.0.0.1:8000/api';
+    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api';
+    if (Platform.isAndroid) return 'https://p2p-real-estate-backend.onrender.com/api'; // Android Emulator alias
+    return 'https://p2p-real-estate-backend.onrender.com/api';
   }
 
   // Google Sign In Instance

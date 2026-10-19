@@ -33,15 +33,22 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     _fetchPropertiesAtSameLocation();
   }
 
-  String _getBaseUrl() {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api';
-    return 'http://127.0.0.1:8000/api';
+  String get baseUrl {
+  if (kIsWeb) {
+    // 🌐 Your live Render backend URL for production/web (Vercel)
+    return 'https://p2p-real-estate-backend.onrender.com/api';
   }
+  
+  // Local development fallbacks for mobile emulators/devices
+  if (Platform.isAndroid) {
+    return 'https://p2p-real-estate-backend.onrender.com/api';
+  }
+  return 'https://p2p-real-estate-backend.onrender.com/api';
+}
 
   Future<void> _fetchPropertiesAtSameLocation() async {
     setState(() => _isLoadingOtherUnits = true);
-    final String baseUrl = _getBaseUrl();
+    final String baseUrl = this.baseUrl;
     final String currentAddress = widget.property.address.trim();
 
     try {
@@ -382,7 +389,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () async {
-                                  final String baseUrl = _getBaseUrl();
+                                  final String baseUrl = this.baseUrl;
                                   final String? token = await StorageService.getToken();
                                   if (token == null || token.trim().isEmpty) {
                                     if (!context.mounted) return;
@@ -461,7 +468,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               showReviewBottomSheet(
                                 context,
                                 property.id,
-                                _getBaseUrl(),
+                                this.baseUrl,
                               );
                             },
                             icon: const Icon(Icons.rate_review_outlined,

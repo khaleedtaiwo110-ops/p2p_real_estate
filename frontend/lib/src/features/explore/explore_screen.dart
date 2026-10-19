@@ -101,9 +101,9 @@ class _ExploreScreenState extends State {
   }
 
   String _getBaseUrl() {
-    if (kIsWeb) return 'http://127.0.0.1:8000/api/properties/';
-    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/properties/';
-    return 'http://127.0.0.1:8000/api/properties/';
+    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
+    if (Platform.isAndroid) return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
+    return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
   }
 
   void _addNewPropertyToList(Map data) {

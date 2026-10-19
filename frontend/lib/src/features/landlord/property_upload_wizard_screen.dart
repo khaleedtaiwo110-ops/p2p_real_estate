@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
@@ -183,18 +183,22 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
   }
 
   Future<void> _publishListing() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields.')),
-      );
-      return;
-    }
+  if (!_formKey.currentState!.validate()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill in all required fields.')),
+    );
+    return;
+  }
 
-    setState(() => _isSubmitting = true);
+  setState(() => _isSubmitting = true);
 
-    final String baseUrl = kIsWeb
-        ? 'http://127.0.0.1:8000/api'
-        : (Platform.isAndroid ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api');
+  // 🌐 Smart base URL: Uses live Render backend in production (Vercel) 
+  // and local fallbacks during development.
+  final String baseUrl = kReleaseMode
+      ? 'https://p2p-real-estate-backend.onrender.com/api'
+      : (kIsWeb 
+          ? 'http://127.0.0.1:8000/api' 
+          : (Platform.isAndroid ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api'));
 
     try {
       // 1. Retrieve the saved JWT token[cite: 1]
