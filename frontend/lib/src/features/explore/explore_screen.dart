@@ -10,6 +10,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_theme.dart' as app_theme;
+import '../../core/network/api_config.dart'; 
 import '../../models/property_model.dart';
 import 'widgets/navbar.dart';
 import 'widgets/staggered_property_card.dart';
@@ -100,11 +101,6 @@ class _ExploreScreenState extends State {
     super.dispose();
   }
 
-  String _getBaseUrl() {
-    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
-    if (Platform.isAndroid) return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
-    return 'https://p2p-real-estate-backend.onrender.com/api/properties/';
-  }
 
   void _addNewPropertyToList(Map data) {
     final photosMap = data['photos'] as Map? ?? {};
@@ -148,10 +144,15 @@ class _ExploreScreenState extends State {
 
   Future _fetchProperties([String query = '']) async {
     setState(() => _isLoading = true);
-    final baseUrl = _getBaseUrl();
     
     try {
-      final url = Uri.parse(query.isEmpty ? baseUrl : '\(baseUrl?search=\){Uri.encodeComponent(query)}');
+      // 🌐 Uses ApiConfig.baseUrl with proper search query string interpolation
+      final Uri url = Uri.parse(
+        query.isEmpty
+            ? '${ApiConfig.baseUrl}/properties/'
+            : '${ApiConfig.baseUrl}/properties/?search=${Uri.encodeComponent(query)}',
+      );
+      
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -853,15 +854,10 @@ class _ExploreScreenState extends State {
                                       crossAxisCount: 2,
                                       mainAxisSpacing: 16,
                                       crossAxisSpacing: 16,
-                                      childCount: filtered.length + 1,
+                                      childCount: filtered.length,
                                       itemBuilder: (context, index) {
-                                        if (index == 1) {
-                                          return const TestimonialCard();
-                                        }
-
-                                        final propertyIndex = index > 1 ? index - 1 : index;
-                                        final property = filtered[propertyIndex];
-                                        final bool isTall = propertyIndex % 2 == 0;
+                                        final property = filtered[index];
+                                        final bool isTall = index % 2 == 0;
                                         final double imageHeight = isTall ? 280.0 : 180.0;
 
                                         return StaggeredPropertyCard(

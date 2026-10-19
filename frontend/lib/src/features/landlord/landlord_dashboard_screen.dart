@@ -10,9 +10,7 @@ import '../explore/widgets/navbar.dart';
 import 'select_property_type_screen.dart';
 import '../../services/storage_service.dart';
 import 'landlord_conversations_screen.dart';
-
-// Assuming LandlordConversationsScreen is defined elsewhere or imported:
-// import 'landlord_conversations_screen.dart';
+import '../../core/network/api_config.dart'; // 👈 Centralized API configuration imported
 
 class LandlordDashboardScreen extends StatefulWidget {
   final Map<String, dynamic>? newProperty;
@@ -35,27 +33,20 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
     _fetchLandlordListings();
   }
 
-  // Base URL resolver based on platform environment
-  String get _baseUrl {
-    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api';
-    return Platform.isAndroid ? 'https://p2p-real-estate-backend.onrender.com/api' : 'https://p2p-real-estate-backend.onrender.com/api';
-  }
+  // 🌐 Base URL resolver using centralized ApiConfig
+  String get _baseUrl => ApiConfig.baseUrl;
 
   // Fetch properties from backend API with JWT Authorization header
   Future<void> _fetchLandlordListings() async {
     setState(() => _isLoading = true);
 
-    final String baseUrl = kIsWeb 
-        ? 'https://p2p-real-estate-backend.onrender.com/api' 
-        : (Platform.isAndroid ? 'https://p2p-real-estate-backend.onrender.com/api' : 'https://p2p-real-estate-backend.onrender.com/api');
-
     // 1. Get the logged-in user's token
     final String? token = await StorageService.getToken();
 
     try {
-      // 2. Fetch from the user-specific endpoint
+      // 2. Fetch from the user-specific endpoint using ApiConfig.baseUrl
       final response = await http.get(
-        Uri.parse('$baseUrl/properties/my-properties/'),
+        Uri.parse('$ApiConfig.baseUrl/properties/my-properties/'), // Alternatively: Uri.parse('$_baseUrl/properties/my-properties/')
         headers: {
           'Content-Type': 'application/json',
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token', // 👈 REQUIRED
@@ -605,7 +596,6 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
   }
 
   // Stat Card Widget
-  // Stat Card Widget (Overflow Protected)
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(

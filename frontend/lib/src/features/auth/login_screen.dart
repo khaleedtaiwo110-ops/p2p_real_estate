@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import '../../core/network/api_config.dart'; // 👈 Import centralized API configuration
 import '../../services/storage_service.dart';
-import '../explore/explore_screen.dart'; // Adjust import path according to your project structure
+import '../explore/explore_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
   bool _isLogin = true;
   bool _isLoading = false;
-  bool _obscurePassword = true; // Toggle for password visibility
+  bool _obscurePassword = true;
   
   // Controllers
   final _usernameController = TextEditingController();
@@ -40,13 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Base URL Resolver
-  String get _baseUrl {
-    if (kIsWeb) return 'https://p2p-real-estate-backend.onrender.com/api';
-    if (Platform.isAndroid) return 'https://p2p-real-estate-backend.onrender.com/api'; // Android Emulator alias
-    return 'https://p2p-real-estate-backend.onrender.com/api';
-  }
-
   // Google Sign In Instance
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: '38245920321-80666d439185ufvatm7324t92jaf0ods.apps.googleusercontent.com',
@@ -61,9 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
     // Wipe all previous user session data BEFORE initiating the request
     await StorageService.clearToken();
 
+    // 🌐 Use ApiConfig.baseUrl instead of local platform checks
     final String endpoint = _isLogin
-        ? '$_baseUrl/auth/login/'
-        : '$_baseUrl/auth/register/';
+        ? '${ApiConfig.baseUrl}/auth/login/'
+        : '${ApiConfig.baseUrl}/auth/register/';
 
     final Map<String, dynamic> payload = _isLogin
         ? {
@@ -101,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final String token = data['token'] ?? data['access'] ?? '';
 
         if (token.isNotEmpty) {
-          // Save the fresh token for the newly logged-in account
           await StorageService.saveToken(token);
         }
 
@@ -114,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Destroy navigation history so old screen widgets/states are unmounted
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const ExploreScreen()),
           (route) => false,
@@ -124,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _showErrorDialog(errorMsg.toString());
       }
     } on TimeoutException {
-      _showErrorDialog('Connection timed out. Please check if your Django backend is running at $_baseUrl');
+      _showErrorDialog('Connection timed out. Please check your network connection.');
     } catch (e) {
       _showErrorDialog('Could not connect to server.');
     } finally {
@@ -141,16 +132,15 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Clear previous authentication data first
       await StorageService.clearToken();
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
       final String? accessToken = googleAuth.accessToken;
 
-      // Exchange Google Tokens with your Django Backend
+      // Exchange Google Tokens with your Django Backend using ApiConfig.baseUrl
       final response = await http.post(
-        Uri.parse('$_baseUrl/auth/google/'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/google/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'access_token': accessToken,
@@ -283,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Username Field (Present on both Login & Register)
+                            // Username Field
                             TextFormField(
                               controller: _usernameController,
                               style: const TextStyle(color: Colors.white),

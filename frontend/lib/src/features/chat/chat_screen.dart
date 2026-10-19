@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../core/network/api_config.dart'; // Adjust the relative path if needed based on your folder structure
 
 class ChatScreen extends StatefulWidget {
   final int conversationId;
@@ -32,7 +33,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _fetchMessages() async {
-    final url = Uri.parse('https://p2p-real-estate-backend.onrender.com/api/chat/conversations/${widget.conversationId}/messages/');
+    final url = Uri.parse('${ApiConfig.baseUrl}/chat/conversations/${widget.conversationId}/messages/');
     try {
       final response = await http.get(
         url,
@@ -47,6 +48,8 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages = json.decode(response.body);
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -58,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     _messageController.clear();
-    final url = Uri.parse('https://p2p-real-estate-backend.onrender.com/api/chat/conversations/${widget.conversationId}/messages/');
+    final url = Uri.parse('${ApiConfig.baseUrl}/chat/conversations/${widget.conversationId}/messages/');
 
     try {
       final response = await http.post(

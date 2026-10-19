@@ -9,6 +9,7 @@ import '../auth/login_screen.dart';
 import '../chat/chat_screen.dart';
 import '../../services/storage_service.dart';
 import '../../core/utils/image_helper.dart';
+import '../../core/network/api_config.dart'; // 👈 Centralized API configuration
 
 class PropertyDetailsScreen extends StatefulWidget {
   final Property property;
@@ -33,22 +34,10 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     _fetchPropertiesAtSameLocation();
   }
 
-  String get baseUrl {
-  if (kIsWeb) {
-    // 🌐 Your live Render backend URL for production/web (Vercel)
-    return 'https://p2p-real-estate-backend.onrender.com/api';
-  }
-  
-  // Local development fallbacks for mobile emulators/devices
-  if (Platform.isAndroid) {
-    return 'https://p2p-real-estate-backend.onrender.com/api';
-  }
-  return 'https://p2p-real-estate-backend.onrender.com/api';
-}
-
   Future<void> _fetchPropertiesAtSameLocation() async {
     setState(() => _isLoadingOtherUnits = true);
-    final String baseUrl = this.baseUrl;
+    // 🌐 Use ApiConfig.baseUrl instead of local checks
+    final String baseUrl = ApiConfig.baseUrl;
     final String currentAddress = widget.property.address.trim();
 
     try {
@@ -389,7 +378,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () async {
-                                  final String baseUrl = this.baseUrl;
+                                  // 🌐 Use ApiConfig.baseUrl here
+                                  final String baseUrl = ApiConfig.baseUrl;
                                   final String? token = await StorageService.getToken();
                                   if (token == null || token.trim().isEmpty) {
                                     if (!context.mounted) return;
@@ -468,7 +458,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               showReviewBottomSheet(
                                 context,
                                 property.id,
-                                this.baseUrl,
+                                ApiConfig.baseUrl, // 👈 Use ApiConfig.baseUrl here
                               );
                             },
                             icon: const Icon(Icons.rate_review_outlined,

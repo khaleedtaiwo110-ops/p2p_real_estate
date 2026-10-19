@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import '../../services/storage_service.dart';
-
+import '../../core/network/api_config.dart'; // 👈 Added centralized ApiConfig import
 
 class PropertyUploadWizardScreen extends StatefulWidget {
   final String listingIntent; // 'rent' or 'own'
@@ -183,29 +183,21 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
   }
 
   Future<void> _publishListing() async {
-  if (!_formKey.currentState!.validate()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please fill in all required fields.')),
-    );
-    return;
-  }
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields.')),
+      );
+      return;
+    }
 
-  setState(() => _isSubmitting = true);
-
-  // 🌐 Smart base URL: Uses live Render backend in production (Vercel) 
-  // and local fallbacks during development.
-  final String baseUrl = kReleaseMode
-      ? 'https://p2p-real-estate-backend.onrender.com/api'
-      : (kIsWeb 
-          ? 'http://127.0.0.1:8000/api' 
-          : (Platform.isAndroid ? 'http://10.0.2.2:8000/api' : 'http://127.0.0.1:8000/api'));
+    setState(() => _isSubmitting = true);
 
     try {
       // 1. Retrieve the saved JWT token[cite: 1]
       final String? token = await StorageService.getToken();
 
-      // 2. Create Multipart Request
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/properties/'));
+      // 2. Create Multipart Request using centralized ApiConfig.baseUrl
+      final request = http.MultipartRequest('POST', Uri.parse('${ApiConfig.baseUrl}/properties/'));
 
       // ✅ Attach Authorization header if token exists[cite: 1]
       if (token != null && token.isNotEmpty) {
