@@ -2,10 +2,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+
+def api_root_view(request):
+    return HttpResponse("Welcome, the P2P Real Estate Backend API is live! 🚀")
 
 urlpatterns = [
     path('', api_root_view),
