@@ -3,12 +3,12 @@ import 'dart:io' show Platform;
 
 class ApiConfig {
   static String get baseUrl {
-    // 🌐 Automatically uses your live Render backend on Vercel or production releases
+    // 🌐 Automatically uses your live Render backend on Vercel / production releases
     if (kReleaseMode) {
       return 'https://p2p-real-estate-backend.onrender.com/api';
     }
 
-    // 💻 Local development fallbacks for local testing
+    // 💻 Local development fallbacks
     if (kIsWeb) {
       return 'http://127.0.0.1:8000/api';
     }
