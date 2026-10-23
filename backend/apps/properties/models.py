@@ -1,3 +1,4 @@
+import uuid
 from django.db import models  # type: ignore[import-not-found]
 from django.conf import settings  # Import settings  # type: ignore[import-not-found]
 
