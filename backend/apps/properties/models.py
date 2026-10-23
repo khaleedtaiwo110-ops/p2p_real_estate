@@ -2,6 +2,7 @@ from django.db import models  # type: ignore[import-not-found]
 from django.conf import settings  # Import settings  # type: ignore[import-not-found]
 
 class Property(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     STATUS_CHOICES = (
         ('PENDING', 'Pending Review (Locked)'),
         ('ACTIVE', 'Active (Unlocked & Public)'),
