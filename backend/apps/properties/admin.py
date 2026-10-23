@@ -16,3 +16,4 @@ class PropertyAdmin(admin.ModelAdmin):
     @admin.action(description='Approve and unlock selected properties')
     def approve_properties(self, request, queryset):
         queryset.update(status='ACTIVE')
+     
