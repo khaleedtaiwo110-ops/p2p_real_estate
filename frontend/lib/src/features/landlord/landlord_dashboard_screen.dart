@@ -46,7 +46,7 @@ class _LandlordDashboardScreenState extends State<LandlordDashboardScreen> {
     try {
       // 2. Fetch from the user-specific endpoint using ApiConfig.baseUrl
       final response = await http.get(
-        Uri.parse('$ApiConfig.baseUrl/properties/my-properties/'), // Alternatively: Uri.parse('$_baseUrl/properties/my-properties/')
+        Uri.parse('$_baseUrl/properties/my-properties/'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token', // 👈 REQUIRED
