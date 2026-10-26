@@ -397,6 +397,9 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                   final landlordId = property.ownerId;
 
                                   try {
+
+                                    print('DEBUG CHAT -> propertyId: $propertyId, landlordId: $landlordId');
+                                    
                                     final response = await http.post(
                                       Uri.parse('$baseUrl/chat/initiate/'),
                                       headers: {
