@@ -11,6 +11,7 @@ ALLOWED_HOSTS = [
     'p2p-real-estate-backend.onrender.com',
     'localhost',
     '127.0.0.1',
+    '.onrender.com', # Automatically allows all subdomains on Render
 ]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
