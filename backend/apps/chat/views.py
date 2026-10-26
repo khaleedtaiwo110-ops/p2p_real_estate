@@ -33,42 +33,35 @@ class InitiateOrGetChatView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        property_id = request.data.get('property_id')
-        landlord_id = request.data.get('landlord_id')
+        # Support both snake_case, camelCase, and nested structures
+        property_id = (
+            request.data.get('property_id') or 
+            request.data.get('propertyId') or 
+            request.data.get('property')
+        )
+        
+        landlord_id = (
+            request.data.get('landlord_id') or 
+            request.data.get('landlordId') or 
+            request.data.get('landlord')
+        )
+
         buyer = request.user
+
+        # If property is an object/dict containing an id
+        if isinstance(property_id, dict):
+            property_id = property_id.get('id')
+
+        # If landlord is an object/dict containing an id
+        if isinstance(landlord_id, dict):
+            landlord_id = landlord_id.get('id')
 
         if not property_id or not landlord_id:
             return Response(
-                {"error": "Both property_id and landlord_id are required."},
+                {"error": f"Both 'property_id' and 'landlord_id' are required. Received data: {request.data}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        if str(buyer.id) == str(landlord_id):
-            return Response(
-                {"error": "You cannot start a chat with yourself."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            property_obj = Property.objects.get(id=property_id)
-            landlord_obj = User.objects.get(id=landlord_id)
-        except (Property.DoesNotExist, User.DoesNotExist) as e:
-            return Response(
-                {"error": f"Invalid reference: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        conversation, created = Conversation.objects.get_or_create(
-            property=property_obj,
-            buyer=buyer,
-            landlord=landlord_obj
-        )
-        serializer = ConversationSerializer(conversation, context={'request': request})
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        )
-
+        
 
 class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
