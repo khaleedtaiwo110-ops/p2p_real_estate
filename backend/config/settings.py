@@ -7,7 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-key-change-this-in-production'
 DEBUG = True
-ALLOWED_HOSTS = ['your-backend-domain.com', 'localhost', '127.0.0.1', '10.0.2.2']
+ALLOWED_HOSTS = [
+    'p2p-real-estate-backend.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 INSTALLED_APPS = [
