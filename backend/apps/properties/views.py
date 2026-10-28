@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from .supabase_utils import upload_image_to_supabase
 
 from .models import Property, PropertyReview
 from .serializers import PropertySerializer, PropertyReviewSerializer
