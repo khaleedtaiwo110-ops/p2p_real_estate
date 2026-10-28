@@ -16,7 +16,7 @@ class PropertyImageSerializer(serializers.ModelSerializer):
             if request is not None:
                 return request.build_absolute_uri(image_url)
             # Fallback if request is missing (construct manually using your Render URL)
-            return f"https://your-backend-name.onrender.com{image_url}"
+            return f"https://p2p-real-estate-backend.onrender.com{image_url}"
         return None
     
 
