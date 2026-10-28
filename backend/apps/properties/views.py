@@ -40,12 +40,17 @@ class LandlordPropertiesView(generics.ListCreateAPIView):
         # Only return properties belonging to the logged-in user
         return Property.objects.filter(landlord=self.request.user).order_by('-created_at')
 
+    def get_serializer_context(self):
+            context = super().get_serializer_context()
+            context['request'] = self.request
+            return context
+
     def perform_create(self, serializer):
         # Automatically bind the property to the authenticated user and set to PENDING
         serializer.save(
             landlord=self.request.user,
             status='PENDING'
-        )
+        )    
 
 # 3. Admin Approval View - CBV (APIView)
 class ApprovePropertyView(APIView):
@@ -113,6 +118,11 @@ class PropertyListAPIView(generics.ListCreateAPIView):
                 queryset = queryset.filter(status='ACTIVE')
 
         return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context    
 
     def perform_create(self, serializer):
         landlord_user = self.request.user if self.request.user.is_authenticated else None

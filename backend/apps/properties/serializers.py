@@ -15,9 +15,10 @@ class PropertyImageSerializer(serializers.ModelSerializer):
             image_url = obj.image.url
             if request is not None:
                 return request.build_absolute_uri(image_url)
-            return image_url
+            # Fallback if request is missing (construct manually using your Render URL)
+            return f"https://your-backend-name.onrender.com{image_url}"
         return None
-
+    
 
 class PropertySerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
