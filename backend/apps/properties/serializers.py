@@ -1,6 +1,5 @@
 import uuid
 from rest_framework import serializers
-from .supabase_utils import upload_image_to_supabase
 from .models import Property, PropertyImage, PropertyReview
 
 class PropertyImageSerializer(serializers.ModelSerializer):
@@ -12,7 +11,7 @@ class PropertyImageSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         if obj.image:
-            # If the database already stores a full public URL (like from Supabase or Cloudinary), return it directly
+            # If the database already stores a full public URL, return it directly
             img_url_str = str(obj.image)
             if img_url_str.startswith('http://') or img_url_str.startswith('https://'):
                 return img_url_str
@@ -22,6 +21,7 @@ class PropertyImageSerializer(serializers.ModelSerializer):
             if request is not None:
                 return request.build_absolute_uri(obj.image.url)
             
+            # Fallback using your live Render backend domain
             return f"https://p2p-real-estate-backend.onrender.com{obj.image.url}"
         return None
     
@@ -58,4 +58,4 @@ class PropertyReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyReview
         fields = ['id', 'property', 'user_name', 'rating', 'comment', 'created_at']
-        read_only_fields = ['user', 'property']   
+        read_only_fields = ['user', 'property'] 
