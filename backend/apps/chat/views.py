@@ -33,7 +33,6 @@ class InitiateOrGetChatView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        # Support both snake_case, camelCase, and nested structures
         property_id = (
             request.data.get('property_id') or 
             request.data.get('propertyId') or 
@@ -46,22 +45,19 @@ class InitiateOrGetChatView(APIView):
             request.data.get('landlord')
         )
 
-        buyer = request.user
-
-        # If property is an object/dict containing an id
         if isinstance(property_id, dict):
             property_id = property_id.get('id')
 
-        # If landlord is an object/dict containing an id
         if isinstance(landlord_id, dict):
             landlord_id = landlord_id.get('id')
 
-        if not property_id or not landlord_id:
+        # Treat 0 or "0" or empty values as missing
+        if not property_id or str(property_id) == '0' or not landlord_id or str(landlord_id) == '0':
             return Response(
-                {"error": f"Both 'property_id' and 'landlord_id' are required. Received data: {request.data}"},
+                {"error": f"Valid 'property_id' and 'landlord_id' are required. Received: {request.data}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+                
 
 class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
