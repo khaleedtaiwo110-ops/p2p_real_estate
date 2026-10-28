@@ -24,10 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
 
-    'cloudinary_storage',
-    'django.contrib.staticfiles',
-    'cloudinary',
-    
     # Third-party packages
     'rest_framework',
     'corsheaders',
