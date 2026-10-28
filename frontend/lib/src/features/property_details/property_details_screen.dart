@@ -407,8 +407,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                         'Authorization': 'Bearer $token',
                                       },
                                       body: jsonEncode({
-                                        'property_id': propertyId,
-                                        'landlord_id': landlordId,
+                                        'property_id':widget.property.id.toString(),
+                                        'landlord_id':widget.property.ownerId.toString(),
                                       }),
                                     );
 
