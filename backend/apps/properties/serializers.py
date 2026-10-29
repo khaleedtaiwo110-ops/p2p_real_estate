@@ -1,6 +1,7 @@
 import uuid
 from rest_framework import serializers
 from .models import Property, PropertyImage, PropertyReview
+from .supabase_utils import upload_image_to_supabase
 
 class PropertyImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -47,7 +48,14 @@ class PropertySerializer(serializers.ModelSerializer):
         property_obj = Property.objects.create(**validated_data)
 
         for img in uploaded_images:
-            PropertyImage.objects.create(property=property_obj, image=img)
+            try:
+                # 1. Upload the image file to Supabase Storage and get its public URL
+                supabase_url = upload_image_to_supabase(img)
+                
+                # 2. Save the public URL string into the PropertyImage record
+                PropertyImage.objects.create(property=property_obj, image=supabase_url)
+            except Exception as e:
+                print(f"Failed to upload image to Supabase: {str(e)}")
 
         return property_obj
 
