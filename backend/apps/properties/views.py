@@ -186,25 +186,43 @@ class InitiateOrGetChatView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        property_id = request.data.get('property_id')
-        landlord_id = request.data.get('landlord_id')
+        # Support snake_case, camelCase, and alternate landlord key names
+        property_id = (
+            request.data.get('property_id') or 
+            request.data.get('propertyId') or 
+            request.data.get('property')
+        )
+        landlord_id = (
+            request.data.get('landlord_id') or 
+            request.data.get('landlordId') or 
+            request.data.get('landlord') or
+            request.data.get('owner_id') or
+            request.data.get('ownerId')
+        )
+
+        # Handle nested objects if passed from frontend
+        if isinstance(property_id, dict):
+            property_id = property_id.get('id')
+        if isinstance(landlord_id, dict):
+            landlord_id = landlord_id.get('id')
+
         buyer = request.user
 
-        # 1. Validate required fields exist in payload
-        if not property_id or not landlord_id:
+        # Validate that IDs exist and are not empty placeholders like '0'
+        if not property_id or str(property_id) == '0' or not landlord_id or str(landlord_id) == '0':
             return Response(
-                {"error": "Both 'property_id' and 'landlord_id' are required."},
+                {"error": f"Valid 'property_id' and 'landlord_id' are required. Received: {request.data}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 2. Prevent self-chatting
+        # Prevent self-chatting
         if str(buyer.id) == str(landlord_id):
             return Response(
                 {"error": "You cannot start a chat with yourself."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 3. Fetch or create conversation thread safely
+        # Fetch or create conversation thread safely
         try:
             conversation, created = Conversation.objects.get_or_create(
                 property_id=property_id,
