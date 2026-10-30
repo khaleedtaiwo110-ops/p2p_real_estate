@@ -406,12 +406,12 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     final response = await http.post(
                                       Uri.parse('$baseUrl/api/chat/initiate/'),
                                       headers: {
-                                        'Content-Type': 'application/json',
+                                       'Content-Type': 'application/json',
                                         'Authorization': 'Bearer $token',
                                       },
                                       body: jsonEncode({
-                                        'property_id':widget.property.id.toString(),
-                                        'landlord_id':widget.property.ownerId.toString(),
+                                        'property_id': widget.property.id.toString(),
+                                        'landlord_id': widget.property.ownerId.toString(),
                                       }),
                                     );
 
