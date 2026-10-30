@@ -398,12 +398,13 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
 
                                   try {
 
-                                    print('DEBUG CHAT -> propertyId: $propertyId, landlordId: $landlordId');
+                                    print('DEBUG CHAT -> propertyId: ${widget.property.id}, landlordId: ${widget.property.ownerId}');
                                     print('DEBUG TOKEN: $token');
                                     print('DEBUG PROPERTY ID: ${widget.property.id}');
                                     print('DEBUG OWNER ID: ${widget.property.ownerId}');
                                     
                                     final response = await http.post(
+                                      
                                       Uri.parse('$baseUrl/chat/initiate/'),
                                       headers: {
                                        'Content-Type': 'application/json',

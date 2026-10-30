@@ -186,6 +186,8 @@ class InitiateOrGetChatView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        print("INCOMING CHAT DATA:", request.data)
+        
         # Support snake_case, camelCase, and alternate landlord key names
         property_id = (
             request.data.get('property_id') or 
