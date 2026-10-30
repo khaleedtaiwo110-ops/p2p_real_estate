@@ -398,10 +398,10 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
 
                                   try {
 
-                                    print('DEBUG CHAT -> propertyId: ${widget.property.id}, landlordId: ${widget.property.ownerId}');
-                                    print('DEBUG TOKEN: $token');
-                                    print('DEBUG PROPERTY ID: ${widget.property.id}');
-                                    print('DEBUG OWNER ID: ${widget.property.ownerId}');
+                                    debugPrint('DEBUG CHAT -> propertyId: ${widget.property.id}, landlordId: ${widget.property.ownerId}');
+                                    debugPrint('DEBUG TOKEN: $token');
+                                    debugPrint('DEBUG PROPERTY ID: ${widget.property.id}');
+                                    debugPrint('DEBUG OWNER ID: ${widget.property.ownerId}');
                                     
                                     final response = await http.post(
                                       
@@ -464,7 +464,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             onPressed: () {
                               showReviewBottomSheet(
                                 context,
-                                property.id,
+                                int.parse(property.id),
                                 ApiConfig.baseUrl, // 👈 Use ApiConfig.baseUrl here
                               );
                             },
