@@ -40,6 +40,7 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = '__all__'
         read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -48,14 +49,9 @@ class PropertySerializer(serializers.ModelSerializer):
         property_obj = Property.objects.create(**validated_data)
 
         for img in uploaded_images:
-            try:
-                # 1. Upload the image file to Supabase Storage and get its public URL
-                supabase_url = upload_image_to_supabase(img)
-                
-                # 2. Save the public URL string into the PropertyImage record
-                PropertyImage.objects.create(property=property_obj, image=supabase_url)
-            except Exception as e:
-                print(f"Failed to upload image to Supabase: {str(e)}")
+            # Remove try/except temporarily to see the exact error if it fails
+            supabase_url = upload_image_to_supabase(img)
+            PropertyImage.objects.create(property=property_obj, image=supabase_url)
 
         return property_obj
 
