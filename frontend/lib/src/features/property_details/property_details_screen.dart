@@ -404,7 +404,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     print('DEBUG OWNER ID: ${widget.property.ownerId}');
                                     
                                     final response = await http.post(
-                                      Uri.parse('$baseUrl/api/chat/initiate/'),
+                                      Uri.parse('$baseUrl/chat/initiate/'),
                                       headers: {
                                        'Content-Type': 'application/json',
                                         'Authorization': 'Bearer $token',
