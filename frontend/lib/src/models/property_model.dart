@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 class Property {
-  final int id;
+  final String id;
   final int ownerId;
   final String title;
   final String description;
@@ -114,7 +114,7 @@ if (json['owner_id'] != null) {
 }
 
     return Property(
-      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      id: json['id']?.toString() ?? '',
       ownerId: parsedOwnerId,
       title: json['title'] ?? 'Untitled',
       description: json['description'] ?? '',
