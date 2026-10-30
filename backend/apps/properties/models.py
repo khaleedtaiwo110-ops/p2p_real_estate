@@ -54,7 +54,7 @@ class Property(models.Model):
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
-    image = models.URLField(max_length=500)
+    image = models.URLField(max_length=500)  # Expanded to support long cloud storage URLs
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 class PropertyReview(models.Model):
