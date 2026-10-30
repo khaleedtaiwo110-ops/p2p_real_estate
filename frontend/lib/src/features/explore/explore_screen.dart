@@ -121,7 +121,7 @@ class _ExploreScreenState extends State {
     ) ?? 0.0;
 
     final newProperty = Property(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       ownerId: 1,
       title: data['title'] ?? 'New Listing',
       description: data['description'] ?? '',
@@ -173,7 +173,7 @@ class _ExploreScreenState extends State {
     setState(() {
       _properties = [
         Property(
-          id: 1,
+          id: '1',
           ownerId: 1,
           title: 'Modern Waterfront Villa',
           description: 'Spacious luxury home featuring panoramic ocean views.',
@@ -189,7 +189,7 @@ class _ExploreScreenState extends State {
           sqft: 3400,
         ),
         Property(
-          id: 2,
+          id: '2',
           ownerId: 2,
           title: 'Downtown Penthouse Apartment',
           description: 'Fully furnished high-rise apartment.',
@@ -205,7 +205,7 @@ class _ExploreScreenState extends State {
           sqft: 1450,
         ),
         Property(
-          id: 3,
+          id: '3',
           ownerId: 3,
           title: 'Prime Commercial Plot',
           description: 'Ready-to-build land with approved permits.',
@@ -221,7 +221,7 @@ class _ExploreScreenState extends State {
           sqft: 12500,
         ),
         Property(
-          id: 4,
+          id: '4',
           ownerId: 4,
           title: 'Historic Suburban Home',
           description: 'Charming neighborhood family residence.',
