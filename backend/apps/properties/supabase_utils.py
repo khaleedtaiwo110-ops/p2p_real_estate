@@ -2,7 +2,12 @@ import os
 from supabase import create_client, Client
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_KEY") or 
+    os.getenv("SUPABASE_SECRET_KEY") or 
+    os.getenv("superbase_key") or
+    os.getenv("SUPABASE_PUBLISHABLE_KEY")
+)
 
 def upload_image_to_supabase(file_obj, path_prefix="property_photos"):
     if not SUPABASE_URL or not SUPABASE_KEY:
