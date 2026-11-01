@@ -403,10 +403,12 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     debugPrint('DEBUG PROPERTY ID: ${widget.property.id}');
                                     debugPrint('DEBUG OWNER ID: ${widget.property.ownerId}');
                                     debugPrint('CHECKING URL: ${ApiConfig.baseUrl}/chat/initiate/');
+                                    debugPrint('SENDING -> property_id: ${widget.property.id}, landlord_id: ${widget.property.ownerId}');
+                                    
                                     
                                     final response = await http.post(
                                       
-                                      Uri.parse('$baseUrl/api/chat/initiate/'),
+                                      Uri.parse('$baseUrl/chat/initiate/'),
                                       headers: {
                                        'Content-Type': 'application/json',
                                         'Authorization': 'Bearer ${activeToken?.trim()}',
@@ -414,6 +416,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                       body: jsonEncode({
                                         'property_id': widget.property.id.toString(),
                                         'landlord_id': widget.property.ownerId.toString(),
+                                        'owner_id': widget.property.ownerId.toString(),
                                       }),
                                     );
 
