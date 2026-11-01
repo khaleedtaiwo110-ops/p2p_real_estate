@@ -10,6 +10,7 @@ import '../chat/chat_screen.dart';
 import '../../services/storage_service.dart';
 import '../../core/utils/image_helper.dart';
 import '../../core/network/api_config.dart'; // 👈 Centralized API configuration
+import '../property_details/widgets/full_screen_image_viewer.dart';
 
 class PropertyDetailsScreen extends StatefulWidget {
   final Property property;
@@ -138,6 +139,20 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       ),
     );
   }
+  void _openImageGallery(int initialIndex) {
+  final images = widget.property.imageUrls;
+  if (images.isEmpty) return;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => FullScreenImageViewer(
+        imageUrls: images,
+        initialIndex: initialIndex,
+      ),
+    ),
+  );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,139 +171,151 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Photo Grid & Action Bar Area
-            Stack(
+Stack(
+  children: [
+    Container(
+      height: 320,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // Main Large Image (Index 0)
+          Expanded(
+            flex: 6,
+            child: GestureDetector(
+              onTap: () => _openImageGallery(0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: images.isNotEmpty
+                    ? _buildImageWidget(images[0])
+                    : _buildPlaceholder(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 4,
+            child: Column(
               children: [
-                Container(
-                  height: 320,
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: images.isNotEmpty
-                              ? _buildImageWidget(images[0])
+                // Top Small Image (Index 1)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _openImageGallery(1),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: images.length > 1
+                          ? _buildImageWidget(images[1])
+                          : _buildPlaceholder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Bottom Small Image / Overlay Counter (Index 2)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _openImageGallery(images.length > 2 ? 2 : 0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          images.length > 2
+                              ? _buildImageWidget(images[2])
                               : _buildPlaceholder(),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 4,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: images.length > 1
-                                    ? _buildImageWidget(images[1])
-                                    : _buildPlaceholder(),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Stack(
-                                  fit: StackFit.expand,
+                          if (images.length > 3)
+                            Container(
+                              color: Colors.black.withOpacity(0.4),
+                              child: Center(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    images.length > 2
-                                        ? _buildImageWidget(images[2])
-                                        : _buildPlaceholder(),
-                                    if (images.length > 3)
-                                      Container(
-                                        color: Colors.black.withOpacity(0.4),
-                                        child: Center(
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.photo_library,
-                                                  color: Colors.white, size: 14),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '+${images.length - 2}',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                    const Icon(Icons.photo_library,
+                                        color: Colors.white, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '+${images.length - 2}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
                                       ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  left: 120,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Flexible(
-                        child: _buildTopPillButton(
-                          icon: Icons.block,
-                          label: 'Hide',
-                          onTap: () {},
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: _buildTopPillButton(
-                          icon: Icons.ios_share,
-                          label: 'Share',
-                          onTap: () {},
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: _buildTopPillButton(
-                          icon: _isSaved ? Icons.favorite : Icons.favorite_border,
-                          iconColor: _isSaved ? Colors.red : Colors.black87,
-                          label: _isSaved ? 'Saved' : 'Save',
-                          onTap: () {
-                            setState(() {
-                              _isSaved = !_isSaved;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 20,
-                  left: 20,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: property.requiresAgent
-                          ? Colors.amber.shade800
-                          : Colors.green.shade600,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      property.requiresAgent ? 'FOR RENT • AGENT' : 'FOR RENT • P2P',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        ],
                       ),
                     ),
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    ),
+    Positioned(
+      top: 20,
+      right: 20,
+      left: 120,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Flexible(
+            child: _buildTopPillButton(
+              icon: Icons.block,
+              label: 'Hide',
+              onTap: () {},
+            ),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: _buildTopPillButton(
+              icon: Icons.ios_share,
+              label: 'Share',
+              onTap: () {},
+            ),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: _buildTopPillButton(
+              icon: _isSaved ? Icons.favorite : Icons.favorite_border,
+              iconColor: _isSaved ? Colors.red : Colors.black87,
+              label: _isSaved ? 'Saved' : 'Save',
+              onTap: () {
+                setState(() {
+                  _isSaved = !_isSaved;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+    Positioned(
+      top: 20,
+      left: 20,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: property.requiresAgent
+              ? Colors.amber.shade800
+              : Colors.green.shade600,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          property.requiresAgent ? 'FOR RENT • AGENT' : 'FOR RENT • P2P',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
 
             // 2. Main Overview Section (Responsive Layout Builder Fix)
             Padding(
