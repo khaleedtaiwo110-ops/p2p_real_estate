@@ -378,83 +378,64 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () async {
-                                  // 🌐 Use ApiConfig.baseUrl here
-                                  final String baseUrl = ApiConfig.baseUrl;
-                                  final String? token = await StorageService.getToken();
-                                  if (token == null || token.trim().isEmpty) {
-                                    if (!context.mounted) return;
-                                    final bool? loggedIn = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                                    );
-                                    if (loggedIn != true) return;
-                                  }
+  final String baseUrl = ApiConfig.baseUrl;
+  final String? token = await StorageService.getToken();
 
-                                  final String? activeToken = await StorageService.getToken();
-                                  if (activeToken == null) return;
+  // Debug print to check your console
+  debugPrint('>>> CHECKING TOKEN: $token');
 
-                                  final propertyId = property.id;
-                                  final landlordId = property.ownerId;
+  if (token == null || token.trim().isEmpty) {
+    if (!context.mounted) return;
+    // Force user to login if token is missing
+    final bool? loggedIn = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+    if (loggedIn != true) return;
+  }
 
-                                  try {
+  final String? activeToken = await StorageService.getToken();
+  if (activeToken == null || activeToken.trim().isEmpty) return;
 
-                                    debugPrint('DEBUG CHAT -> propertyId: ${widget.property.id}, landlordId: ${widget.property.ownerId}');
-                                    debugPrint('DEBUG TOKEN: $token');
-                                    debugPrint('DEBUG PROPERTY ID: ${widget.property.id}');
-                                    debugPrint('DEBUG OWNER ID: ${widget.property.ownerId}');
-                                    debugPrint('CHECKING URL: ${ApiConfig.baseUrl}/chat/initiate/');
-                                    debugPrint('SENDING -> property_id: ${widget.property.id}, landlord_id: ${widget.property.ownerId}');
-                                    
-                                    
-                                    final response = await http.post(
-                                      
-                                      Uri.parse('$baseUrl/chat/initiate/'),
-                                      headers: {
-                                       'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer ${activeToken?.trim()}',
-                                      },
-                                      body: jsonEncode({
-                                        'property_id': widget.property.id.toString(),
-                                        'landlord_id': widget.property.ownerId.toString(),
-                                        'owner_id': widget.property.ownerId.toString(),
-                                      }),
-                                    );
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chat/initiate/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${activeToken.trim()}', // 👈 Attached here
+      },
+      body: jsonEncode({
+        'property_id': widget.property.id.toString(),
+        'landlord_id': widget.property.ownerId.toString(),
+      }),
+    );
 
-                                    if (response.statusCode == 200 || response.statusCode == 201) {
-                                      final conversationData = jsonDecode(response.body);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final conversationData = jsonDecode(response.body);
+      if (!context.mounted) return;
 
-                                      if (!context.mounted) return;
-
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ChatScreen(
-                                            conversationId: conversationData['id'],
-                                            title: property.title,
-                                            currentUserId: conversationData['buyer'].toString(),
-                                            authToken: activeToken.trim(),
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      final errorBody = jsonDecode(response.body);
-                                      if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            errorBody['error'] ?? 'Could not start conversation (${response.statusCode}).',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    debugPrint('Error starting chat: $e');
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Network error. Failed to open chat.')),
-                                    );
-                                  }
-                                },
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(
+            conversationId: conversationData['id'],
+            title: widget.property.title,
+            currentUserId: conversationData['buyer'].toString(),
+            authToken: activeToken.trim(),
+          ),
+        ),
+      );
+    } else {
+      final errorBody = jsonDecode(response.body);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorBody['error'] ?? 'Could not start chat (${response.statusCode})')),
+      );
+    }
+  } catch (e) {
+    debugPrint('Error starting chat: $e');
+  }
+},
                                 icon: const Icon(Icons.message, size: 16),
                                 label: const Text('Message'),
                               ),
