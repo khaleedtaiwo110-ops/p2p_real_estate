@@ -402,6 +402,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     debugPrint('DEBUG TOKEN: $token');
                                     debugPrint('DEBUG PROPERTY ID: ${widget.property.id}');
                                     debugPrint('DEBUG OWNER ID: ${widget.property.ownerId}');
+                                    debugPrint('CHECKING URL: ${ApiConfig.baseUrl}/chat/initiate/');
                                     
                                     final response = await http.post(
                                       
