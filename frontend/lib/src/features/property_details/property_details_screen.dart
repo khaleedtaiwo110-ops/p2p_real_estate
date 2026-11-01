@@ -408,7 +408,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                       Uri.parse('$baseUrl/api/chat/initiate/'),
                                       headers: {
                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer ${activeToken.trim()}',
+                                        'Authorization': 'Bearer ${activeToken?.trim()}',
                                       },
                                       body: jsonEncode({
                                         'property_id': widget.property.id.toString(),
