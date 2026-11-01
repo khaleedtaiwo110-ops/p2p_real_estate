@@ -57,7 +57,28 @@ class InitiateOrGetChatView(APIView):
                 {"error": f"Valid 'property_id' and 'landlord_id' are required. Received: {request.data}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-                
+        
+        property_obj = get_object_or_404(Property, id=property_id)
+        landlord_user = get_object_or_404(User, id=landlord_id)
+        buyer_user = request.user
+
+        # Prevent chatting with oneself
+        if buyer_user == landlord_user:
+            return Response(
+                {"error": "You cannot start a conversation with yourself."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or create the unique conversation between buyer, landlord, and property
+        conversation, created = Conversation.objects.get_or_create(
+            property=property_obj,
+            buyer=buyer_user,
+            landlord=landlord_user
+        )
+
+        serializer = ConversationSerializer(conversation)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)                
 
 class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
