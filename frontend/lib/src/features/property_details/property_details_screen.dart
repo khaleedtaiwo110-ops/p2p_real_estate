@@ -405,7 +405,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     
                                     final response = await http.post(
                                       
-                                      Uri.parse('$baseUrl/chat/initiate/'),
+                                      Uri.parse('$baseUrl/api/chat/initiate/'),
                                       headers: {
                                        'Content-Type': 'application/json',
                                         'Authorization': 'Bearer ${activeToken.trim()}',
