@@ -42,7 +42,9 @@ class InitiateOrGetChatView(APIView):
         landlord_id = (
             request.data.get('landlord_id') or 
             request.data.get('landlordId') or 
-            request.data.get('landlord')
+            request.data.get('landlord') or
+            request.data.get('owner_id') or
+            request.data.get('ownerId')
         )
 
         if isinstance(property_id, dict):
@@ -58,28 +60,30 @@ class InitiateOrGetChatView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # ✅ Fetch the property and landlord objects securely
         property_obj = get_object_or_404(Property, id=property_id)
         landlord_user = get_object_or_404(User, id=landlord_id)
         buyer_user = request.user
 
-        # Prevent chatting with oneself
+        # ✅ Prevent chatting with oneself
         if buyer_user == landlord_user:
             return Response(
                 {"error": "You cannot start a conversation with yourself."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get or create the unique conversation between buyer, landlord, and property
+        # ✅ Get or create the unique conversation between buyer, landlord, and property
         conversation, created = Conversation.objects.get_or_create(
             property=property_obj,
             buyer=buyer_user,
             landlord=landlord_user
         )
 
-        serializer = ConversationSerializer(conversation)
+        # ✅ Serialize and return the conversation data
+        serializer = ConversationSerializer(conversation, context={'request': request})
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(serializer.data, status=status_code)                
-
+        return Response(serializer.data, status=status_code)
+    
 class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
     authentication_classes = [JWTAuthentication]
