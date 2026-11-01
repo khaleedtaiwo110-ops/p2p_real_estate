@@ -91,13 +91,22 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final String token = data['token'] ?? data['access'] ?? '';
+        // 🔍 Catch the token dynamically across different backend naming conventions
+        final String token = data['access'] ?? 
+                             data['token'] ?? 
+                             data['key'] ?? 
+                             data['access_token'] ?? '';
+
+        debugPrint('>>> LOGIN SUCCESS. Extracted Token length: ${token.length}');
 
         if (token.isNotEmpty) {
           await StorageService.saveToken(token);
+        } else {
+          debugPrint('>>> WARNING: Login succeeded but token key was not found in response: $data');
         }
 
         if (!mounted) return;
+  
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -160,12 +169,22 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final String token = data['token'] ?? data['access'] ?? '';
+        // 🔍 Catch the token dynamically across different backend naming conventions
+        final String token = data['access'] ?? 
+                             data['token'] ?? 
+                             data['key'] ?? 
+                             data['access_token'] ?? '';
+
+        debugPrint('>>> LOGIN SUCCESS. Extracted Token length: ${token.length}');
+
         if (token.isNotEmpty) {
           await StorageService.saveToken(token);
+        } else {
+          debugPrint('>>> WARNING: Login succeeded but token key was not found in response: $data');
         }
 
         if (!mounted) return;
+        // ... navigation code follows
 
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const ExploreScreen()),

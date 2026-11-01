@@ -379,22 +379,14 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               child: OutlinedButton.icon(
                                 onPressed: () async {
   final String baseUrl = ApiConfig.baseUrl;
-  final String? token = await StorageService.getToken();
-
-  // Debug print to check your console
-  debugPrint('>>> CHECKING TOKEN: $token');
-
-  if (token == null || token.trim().isEmpty) {
-    if (!context.mounted) return;
-    // Force user to login if token is missing
-    final bool? loggedIn = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-    if (loggedIn != true) return;
-  }
-
   final String? activeToken = await StorageService.getToken();
+debugPrint('>>> CHAT REQUEST TOKEN CHECK: "$activeToken"'); // 👈 Add this line!
+
+if (activeToken == null || activeToken.trim().isEmpty) {
+  debugPrint('>>> ERROR: Token is null or empty, blocking chat request.');
+  return;
+}
+
   if (activeToken == null || activeToken.trim().isEmpty) return;
 
   try {
