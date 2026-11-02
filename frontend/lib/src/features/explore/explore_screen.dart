@@ -14,6 +14,7 @@ import '../../core/network/api_config.dart';
 import '../../models/property_model.dart';
 import 'widgets/navbar.dart';
 import 'widgets/staggered_property_card.dart';
+import 'widgets/horizontal_staggered_property_list.dart'; // 👈 Imported separate horizontal list widget
 
 class Debouncer {
   final int milliseconds;
@@ -35,17 +36,17 @@ class ExploreScreen extends StatefulWidget {
   const ExploreScreen({Key? key}) : super(key: key);
 
   @override
-  State createState() => _ExploreScreenState();
+  State<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends State {
+class _ExploreScreenState extends State<ExploreScreen> {
 
-  List _properties = [];
+  List<Property> _properties = [];
   bool _isLoading = true;
 
   String _selectedCategory = 'ALL';
   String _selectedSubCategory = 'ALL';
-  String _userInitial = ''; // Stores the first letter[cite: 1]
+  String _userInitial = '';
 
   bool _isMapView = false;
   Property? _selectedPropertyForMap;
@@ -53,7 +54,7 @@ class _ExploreScreenState extends State {
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _debouncer = Debouncer(milliseconds: 400);
 
-  final List _houseSubcategories = [
+  final List<String> _houseSubcategories = [
     'ALL',
     'Bungalow',
     'Semi Detached Duplex',
@@ -63,7 +64,7 @@ class _ExploreScreenState extends State {
     'Others'
   ];
 
-  final List _rentSubcategories = [
+  final List<String> _rentSubcategories = [
     'ALL',
     'Self Con',
     '1 Bed',
@@ -76,20 +77,17 @@ class _ExploreScreenState extends State {
   void initState() {
     super.initState();
     _fetchProperties();
-    _loadUserInitial(); // Load logged-in user's initial[cite: 1]
+    _loadUserInitial();
   }
 
-  Future _loadUserInitial() async {
-    final prefs = await SharedPreferences.getInstance(); //[cite: 1]
-    
-    // Retrieve username or full_name saved during login/registration
+  Future<void> _loadUserInitial() async {
+    final prefs = await SharedPreferences.getInstance();
     final String? username = prefs.getString('p2p_username') ?? 
-                             prefs.getString('p2p_full_name'); //[cite: 1]
+                             prefs.getString('p2p_full_name');
 
-    if (username != null && username.trim().isNotEmpty) { //[cite: 1]
+    if (username != null && username.trim().isNotEmpty) {
       setState(() {
-        // Grab first letter and convert to uppercase
-        _userInitial = username.trim()[0].toUpperCase(); //[cite: 1]
+        _userInitial = username.trim()[0].toUpperCase();
       });
     }
   }
@@ -101,10 +99,9 @@ class _ExploreScreenState extends State {
     super.dispose();
   }
 
-
-  void _addNewPropertyToList(Map data) {
+  void _addNewPropertyToList(Map<String, dynamic> data) {
     final photosMap = data['photos'] as Map? ?? {};
-    List imagePaths = [];
+    List<String> imagePaths = [];
 
     photosMap.forEach((key, value) {
       if (value != null && value is File) {
@@ -131,7 +128,7 @@ class _ExploreScreenState extends State {
       city: data['city'] ?? 'Local Area',
       state: data['state'] ?? 'State',
       requiresAgent: false,
-      imageUrls: imagePaths.cast(),
+      imageUrls: imagePaths,
       beds: 2,
       baths: 2,
       sqft: 1200,
@@ -142,11 +139,10 @@ class _ExploreScreenState extends State {
     });
   }
 
-  Future _fetchProperties([String query = '']) async {
+  Future<void> _fetchProperties([String query = '']) async {
     setState(() => _isLoading = true);
     
     try {
-      // 🌐 Uses ApiConfig.baseUrl with proper search query string interpolation
       final Uri url = Uri.parse(
         query.isEmpty
             ? '${ApiConfig.baseUrl}/properties/'
@@ -156,7 +152,7 @@ class _ExploreScreenState extends State {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
+        final List<dynamic> data = json.decode(response.body);
         setState(() {
           _properties = data.map((json) => Property.fromJson(json)).toList();
           _isLoading = false;
@@ -241,7 +237,7 @@ class _ExploreScreenState extends State {
     });
   }
 
-  List get _filteredProperties {
+  List<Property> get _filteredProperties {
     final search = _searchController.text.trim().toLowerCase();
 
     return _properties.where((p) {
@@ -272,7 +268,7 @@ class _ExploreScreenState extends State {
   }
 
   Widget _buildLiveMapView() {
-    final Map propertyCoords = {
+    final Map<int, LatLng> propertyCoords = {
       1: const LatLng(25.7617, -80.1918),
       2: const LatLng(34.0522, -118.2437),
       3: const LatLng(30.2672, -97.7431),
@@ -293,7 +289,8 @@ class _ExploreScreenState extends State {
             ),
             MarkerLayer(
               markers: _filteredProperties.map((property) {
-                final pos = propertyCoords[property.id] ?? const LatLng(25.7617, -80.1918);
+                final int propIdInt = int.tryParse(property.id) ?? 1;
+                final pos = propertyCoords[propIdInt] ?? const LatLng(25.7617, -80.1918);
                 return Marker(
                   point: pos,
                   width: 80,
@@ -674,7 +671,7 @@ class _ExploreScreenState extends State {
                         child: Column(
                           children: [
                             NavBar(
-                              userInitial: _userInitial, // Pass to NavBar if required by widget spec
+                              userInitial: _userInitial,
                               onCategorySelected: (category) {
                                 setState(() {
                                   _selectedCategory = category == 'HOUSE' ? 'OWN' : category;
@@ -845,6 +842,12 @@ class _ExploreScreenState extends State {
                                       children: [
                                         _buildDreamHomeNotificationBanner(),
                                         _buildTopRecommendedHeader(),
+                                        
+                                        // 👇 INTEGRATED HORIZONTAL X-AXIS STAGGERED LIST FROM SEPARATE FILE
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 16.0),
+                                          child: HorizontalStaggeredPropertyList(properties: filtered),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -906,72 +909,72 @@ class _ExploreScreenState extends State {
   }
   
   Widget _buildDropdownCategoryChip(
-  String categoryKey,
-  String label,
-  List subcategories,
-) {
-  final isSelected = _selectedCategory == categoryKey;
-  final currentSub = _selectedSubCategory;
-  final displayLabel = (isSelected && currentSub != 'ALL')
-      ? '$label: $currentSub'
-      : label;
+    String categoryKey,
+    String label,
+    List<String> subcategories,
+  ) {
+    final isSelected = _selectedCategory == categoryKey;
+    final currentSub = _selectedSubCategory;
+    final displayLabel = (isSelected && currentSub != 'ALL')
+        ? '$label: $currentSub'
+        : label;
 
- return Padding(
-  padding: const EdgeInsets.only(right: 8),
-    child: PopupMenuButton<String>(
-      onSelected: (String sub) {
-        setState(() {
-          _selectedCategory = categoryKey;
-          _selectedSubCategory = sub;
-        });
-      },
-      itemBuilder: (BuildContext context) {
-        return List.generate(subcategories.length, (index) {
-          final sub = subcategories[index];
-          final isSubSelected = currentSub == sub;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: PopupMenuButton<String>(
+        onSelected: (String sub) {
+          setState(() {
+            _selectedCategory = categoryKey;
+            _selectedSubCategory = sub;
+          });
+        },
+        itemBuilder: (BuildContext context) {
+          return List.generate(subcategories.length, (index) {
+            final sub = subcategories[index];
+            final isSubSelected = currentSub == sub;
 
-          return PopupMenuItem(
-            value: sub,
-            child: Text(
-              sub == 'ALL' ? 'All $label' : sub,
-              style: TextStyle(
-                fontWeight: isSubSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSubSelected ? app_theme.AppColors.primary : Colors.black87,
+            return PopupMenuItem(
+              value: sub,
+              child: Text(
+                sub == 'ALL' ? 'All $label' : sub,
+                style: TextStyle(
+                  fontWeight: isSubSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSubSelected ? app_theme.AppColors.primary : Colors.black87,
+                ),
               ),
+            );
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? app_theme.AppColors.primary : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? app_theme.AppColors.primary : Colors.grey.shade300,
             ),
-          );
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? app_theme.AppColors.primary : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? app_theme.AppColors.primary : Colors.grey.shade300,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                displayLabel,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : app_theme.AppColors.textMuted,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 18,
+                color: isSelected ? Colors.white : app_theme.AppColors.textMuted,
+              ),
+            ],
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              displayLabel,
-              style: TextStyle(
-                color: isSelected ? Colors.white : app_theme.AppColors.textMuted,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              size: 18,
-              color: isSelected ? Colors.white : app_theme.AppColors.textMuted,
-            ),
-          ],
-        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
