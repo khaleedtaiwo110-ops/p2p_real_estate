@@ -15,6 +15,7 @@ import '../../models/property_model.dart';
 import 'widgets/navbar.dart';
 import 'widgets/staggered_property_card.dart';
 import 'widgets/horizontal_staggered_property_list.dart';
+import '../property_details/property_list_screen.dart'; // 👈 Imported PropertyListScreen for navigation
 
 class Debouncer {
   final int milliseconds;
@@ -97,6 +98,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _searchController.dispose();
     _debouncer.dispose();
     super.dispose();
+  }
+
+  // 👇 Helper method to navigate to the separate results screen
+  void _navigateToResults({String category = 'ALL', String subCategory = 'ALL', String query = ''}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PropertyListScreen(
+          allProperties: _properties,
+          initialCategory: category,
+          initialSubCategory: subCategory,
+          searchQuery: query,
+        ),
+      ),
+    );
   }
 
   void _addNewPropertyToList(Map<String, dynamic> data) {
@@ -252,22 +268,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
         }
       }
 
-      // Fix 1: Case-insensitive property type comparison
-      if (_selectedCategory != 'ALL' && 
-          p.propertyType.trim().toUpperCase() != _selectedCategory.trim().toUpperCase()) {
+      if (_selectedCategory != 'ALL' && p.propertyType != _selectedCategory) {
         return false;
       }
 
-      // Fix 2: Safer subcategory matching
       if (_selectedSubCategory != 'ALL') {
         final sub = _selectedSubCategory.toLowerCase();
         final desc = p.description.toLowerCase();
         final title = p.title.toLowerCase();
-        
-        // If 'Others' is selected, you can handle it or let it pass
-        if (sub != 'others' && !desc.contains(sub) && !title.contains(sub)) {
-          return false;
-        }
+        return desc.contains(sub) || title.contains(sub);
       }
 
       return true;
@@ -680,10 +689,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             NavBar(
                               userInitial: _userInitial,
                               onCategorySelected: (category) {
-                                setState(() {
-                                  _selectedCategory = category == 'HOUSE' ? 'OWN' : category;
-                                  _selectedSubCategory = 'ALL';
-                                });
+                                final mappedCategory = category == 'HOUSE' ? 'OWN' : category;
+                                _navigateToResults(category: mappedCategory);
                               },
                               onPropertyAdded: (newPropertyData) {
                                 _addNewPropertyToList(newPropertyData);
@@ -732,34 +739,31 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                       children: [
                                         Expanded(
                                           child: TextField(
-  controller: _searchController,
-  onChanged: (val) {
-    // Triggers local UI rebuild immediately to filter `_filteredProperties`
-    setState(() {});
-    
-    // Optional: Debounce backend fetch if you want to query the server after typing stops
-    _debouncer.run(() {
-      if (val.trim().isNotEmpty) {
-        _fetchProperties(val);
-      } else {
-        _fetchProperties(); // Reset to all properties if empty
-      }
-    });
-  },
-  style: const TextStyle(
-    fontSize: 15,
-    color: Color(0xFF0F172A),
-  ),
-  decoration: const InputDecoration(
-    hintText: 'Enter an address, neighborhood, city, or ZIP code',
-    hintStyle: TextStyle(
-      color: Color(0xFF64748B),
-      fontSize: 14,
-    ),
-    border: InputBorder.none,
-    contentPadding: EdgeInsets.symmetric(horizontal: 20),
-  ),
-),
+                                            controller: _searchController,
+                                            onChanged: (val) {
+                                              setState(() {});
+                                              _debouncer.run(() {
+                                                if (val.trim().isNotEmpty) {
+                                                  _fetchProperties(val);
+                                                } else {
+                                                  _fetchProperties();
+                                                }
+                                              });
+                                            },
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                            decoration: const InputDecoration(
+                                              hintText: 'Enter an address, neighborhood, city, or ZIP code',
+                                              hintStyle: TextStyle(
+                                                color: Color(0xFF64748B),
+                                                fontSize: 14,
+                                              ),
+                                              border: InputBorder.none,
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                                            ),
+                                          ),
                                         ),
                                         IconButton(
                                           icon: Icon(
@@ -774,7 +778,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         ),
                                         GestureDetector(
                                           onTap: () {
-                                            _fetchProperties(_searchController.text);
+                                            // 👇 Navigates to results screen with search query
+                                            _navigateToResults(query: _searchController.text);
                                           },
                                           child: Container(
                                             height: 40,
@@ -880,10 +885,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: FilterChip(
         label: Text(label),
         selected: isSelected,
-        onSelected: (_) => setState(() {
-          _selectedCategory = categoryKey;
-          _selectedSubCategory = 'ALL';
-        }),
+        onSelected: (_) {
+          // 👇 Navigate to results screen on category chip selection
+          _navigateToResults(category: categoryKey);
+        },
         selectedColor: app_theme.AppColors.primary,
         backgroundColor: Colors.white,
         labelStyle: TextStyle(
@@ -916,10 +921,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
       padding: const EdgeInsets.only(right: 8),
       child: PopupMenuButton<String>(
         onSelected: (String sub) {
-          setState(() {
-            _selectedCategory = categoryKey;
-            _selectedSubCategory = sub;
-          });
+          // 👇 Navigate to results screen with selected category and subcategory
+          _navigateToResults(category: categoryKey, subCategory: sub);
         },
         itemBuilder: (BuildContext context) {
           return List.generate(subcategories.length, (index) {
