@@ -162,25 +162,31 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
 
   /// Opens full-screen search modal with auto-complete and interactive map
   Future<void> _openLocationPicker() async {
-    final Map<String, dynamic>? result = await showModalBottomSheet<Map<String, dynamic>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _LocationSearchModal(initialLocation: _selectedLocation),
-    );
+  final Map<String, dynamic>? result = await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _LocationSearchModal(initialLocation: _selectedLocation),
+  );
 
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result['location'] as LatLng;
-        _selectedAddressLabel = result['address'] as String;
-        
-        // Auto-fill address field if user hasn't typed manually
-        if (result['displayName'] != null) {
-          _addressController.text = result['displayName'];
-        }
-      });
-    }
+  if (result != null) {
+    setState(() {
+      _selectedLocation = result['location'] as LatLng;
+      _selectedAddressLabel = result['address'] as String;
+      
+      // Auto-fill full address, city, and state text fields
+      if (result['address'] != null && (result['address'] as String).isNotEmpty) {
+        _addressController.text = result['address'];
+      }
+      if (result['city'] != null && (result['city'] as String).isNotEmpty) {
+        _cityController.text = result['city'];
+      }
+      if (result['state'] != null && (result['state'] as String).isNotEmpty) {
+        _stateController.text = result['state'];
+      }
+    });
   }
+}
 
   Future<void> _publishListing() async {
     if (!_formKey.currentState!.validate()) {

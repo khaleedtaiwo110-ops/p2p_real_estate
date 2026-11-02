@@ -14,7 +14,7 @@ import '../../core/network/api_config.dart';
 import '../../models/property_model.dart';
 import 'widgets/navbar.dart';
 import 'widgets/staggered_property_card.dart';
-import 'widgets/horizontal_staggered_property_list.dart'; // 👈 Imported separate horizontal list widget
+import 'widgets/horizontal_staggered_property_list.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -834,43 +834,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   ),
                                 ),
                               )
-                            : SliverMainAxisGroup(
-                                slivers: [
-                                  SliverToBoxAdapter(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        _buildDreamHomeNotificationBanner(),
-                                        _buildTopRecommendedHeader(),
-                                        
-                                        // 👇 INTEGRATED HORIZONTAL X-AXIS STAGGERED LIST FROM SEPARATE FILE
-                                        Padding(
-                                          padding: const EdgeInsets.only(bottom: 16.0),
-                                          child: HorizontalStaggeredPropertyList(properties: filtered),
-                                        ),
-                                      ],
+                            : SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildDreamHomeNotificationBanner(),
+                                    _buildTopRecommendedHeader(),
+                                    
+                                    // Clean horizontal list of filtered properties (No duplicate masonry grid underneath)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 32.0),
+                                      child: HorizontalStaggeredPropertyList(properties: filtered),
                                     ),
-                                  ),
-                                  SliverPadding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    sliver: SliverMasonryGrid.count(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 16,
-                                      crossAxisSpacing: 16,
-                                      childCount: filtered.length,
-                                      itemBuilder: (context, index) {
-                                        final property = filtered[index];
-                                        final bool isTall = index % 2 == 0;
-                                        final double imageHeight = isTall ? 280.0 : 180.0;
-
-                                        return StaggeredPropertyCard(
-                                          property: property,
-                                          imageHeight: imageHeight,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
               ],
             ),
