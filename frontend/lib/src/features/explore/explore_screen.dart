@@ -252,15 +252,22 @@ class _ExploreScreenState extends State<ExploreScreen> {
         }
       }
 
-      if (_selectedCategory != 'ALL' && p.propertyType != _selectedCategory) {
+      // Fix 1: Case-insensitive property type comparison
+      if (_selectedCategory != 'ALL' && 
+          p.propertyType.trim().toUpperCase() != _selectedCategory.trim().toUpperCase()) {
         return false;
       }
 
+      // Fix 2: Safer subcategory matching
       if (_selectedSubCategory != 'ALL') {
         final sub = _selectedSubCategory.toLowerCase();
         final desc = p.description.toLowerCase();
         final title = p.title.toLowerCase();
-        return desc.contains(sub) || title.contains(sub);
+        
+        // If 'Others' is selected, you can handle it or let it pass
+        if (sub != 'others' && !desc.contains(sub) && !title.contains(sub)) {
+          return false;
+        }
       }
 
       return true;
