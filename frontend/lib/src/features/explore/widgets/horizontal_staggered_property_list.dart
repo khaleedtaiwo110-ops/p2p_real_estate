@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/property_model.dart';
+import '../../../models/property_model.dart';
 import 'staggered_property_card.dart'; // Ensure this matches your project import path
 
 class HorizontalStaggeredPropertyList extends StatelessWidget {
