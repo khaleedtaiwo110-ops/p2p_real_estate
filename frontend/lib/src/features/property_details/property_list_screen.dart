@@ -63,7 +63,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   List<Property> get _filteredProperties {
     final search = _searchController.text.trim().toLowerCase();
 
-    return _properties.where((p) {
+    return widget.allProperties.where((p) {
       if (search.isNotEmpty) {
         final matchesTitle = p.title.toLowerCase().contains(search);
         final matchesAddress = p.address.toLowerCase().contains(search);
