@@ -322,7 +322,7 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
 
                   if (widget.listingIntent == 'rent') ...[
                     DropdownButtonFormField<String>(
-                      value: _selectedTenantPreference,
+                      initialValue: _selectedTenantPreference,
                       decoration: const InputDecoration(
                         labelText: 'Tenant Preference',
                         border: OutlineInputBorder(),
@@ -431,7 +431,7 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: kIsWeb ? 4 : 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
@@ -502,7 +502,7 @@ class _PropertyUploadWizardScreenState extends State<PropertyUploadWizardScreen>
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        color: Colors.black.withOpacity(0.65),
+                        color: Colors.black.withValues(alpha: 0.65),
                         child: Text(
                           label,
                           style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
@@ -558,12 +558,36 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
   List<dynamic> _searchResults = [];
   bool _isSearching = false;
   String _selectedDisplayName = '';
+  bool _isLoadingAddress = false;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     _currentPinnedLocation = widget.initialLocation;
+    _reverseGeocode(_currentPinnedLocation);
+  }
+
+  /// Fetches the full human-readable address from coordinates
+  Future<void> _reverseGeocode(LatLng location) async {
+    setState(() => _isLoadingAddress = true);
+    final url = Uri.parse(
+      'https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json',
+    );
+
+    try {
+      final response = await http.get(url, headers: {'User-Agent': 'com.example.app'});
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _selectedDisplayName = data['display_name'] ?? '';
+        });
+      }
+    } catch (_) {
+      // Handle network errors gracefully
+    } finally {
+      setState(() => _isLoadingAddress = false);
+    }
   }
 
   Future<void> _searchLocation(String query) async {
@@ -573,7 +597,7 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
     }
 
     setState(() => _isSearching = true);
-
+    
     final url = Uri.parse(
       'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=5',
     );
@@ -671,7 +695,7 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8),
                 ],
               ),
               child: ListView.builder(
@@ -695,7 +719,7 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
 
           const SizedBox(height: 8),
 
-          // Interactive Map View
+          // Interactive Map View with Center Pin & Reverse Geocoding
           Expanded(
             child: Stack(
               children: [
@@ -704,35 +728,58 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
                   options: MapOptions(
                     initialCenter: _currentPinnedLocation,
                     initialZoom: 14,
-                    onTap: (_, point) {
-                      setState(() {
-                        _currentPinnedLocation = point;
-                        _selectedDisplayName = '';
-                      });
+                    onPositionChanged: (position, hasGesture) {
+                      if (hasGesture) {
+                        _currentPinnedLocation = position.center;
+                      }
+                    },
+                    onMapEvent: (event) {
+                      // Fetch full address once user stops panning the map
+                      if (event is MapEventMoveEnd) {
+                        _reverseGeocode(_currentPinnedLocation);
+                      }
                     },
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.app',
                       tileProvider: CancellableNetworkTileProvider(),
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: _currentPinnedLocation,
-                          width: 48,
-                          height: 48,
-                          child: const Icon(
-                            Icons.location_pin,
-                            color: Colors.red,
-                            size: 44,
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
+
+                // Fixed center pin overlay
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 40),
+                    child: Icon(Icons.location_pin, color: Colors.red, size: 48),
+                  ),
+                ),
+
+                // Loading Address Overlay Indicator
+                if (_isLoadingAddress)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          SizedBox(width: 8),
+                          Text('Fetching full address...', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
 
                 // Confirm Selection Button Floating Overlay
                 Positioned(
@@ -745,18 +792,20 @@ class _LocationSearchModalState extends State<_LocationSearchModal> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () {
-                      Navigator.pop(context, {
-                        'location': _currentPinnedLocation,
-                        'address': _selectedDisplayName.isNotEmpty
-                            ? _selectedDisplayName
-                            : '${_currentPinnedLocation.latitude.toStringAsFixed(4)}, ${_currentPinnedLocation.longitude.toStringAsFixed(4)}',
-                        'displayName': _selectedDisplayName.isNotEmpty ? _selectedDisplayName : null,
-                      });
-                    },
-                    child: const Text(
-                      'Confirm Location Pin',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    onPressed: _isLoadingAddress
+                        ? null
+                        : () {
+                            Navigator.pop(context, {
+                              'location': _currentPinnedLocation,
+                              'address': _selectedDisplayName.isNotEmpty
+                                  ? _selectedDisplayName
+                                  : '${_currentPinnedLocation.latitude.toStringAsFixed(4)}, ${_currentPinnedLocation.longitude.toStringAsFixed(4)}',
+                              'displayName': _selectedDisplayName.isNotEmpty ? _selectedDisplayName : null,
+                            });
+                          },
+                    child: Text(
+                      _isLoadingAddress ? 'Loading Full Address...' : 'Confirm Location Pin',
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
