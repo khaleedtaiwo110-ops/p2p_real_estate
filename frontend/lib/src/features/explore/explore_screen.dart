@@ -725,25 +725,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                       children: [
                                         Expanded(
                                           child: TextField(
-                                            controller: _searchController,
-                                            onChanged: (val) {
-                                              _debouncer.run(() => _fetchProperties(val));
-                                              setState(() {});
-                                            },
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              color: Color(0xFF0F172A),
-                                            ),
-                                            decoration: const InputDecoration(
-                                              hintText: 'Enter an address, neighborhood, city, or ZIP code',
-                                              hintStyle: TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 14,
-                                              ),
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                                            ),
-                                          ),
+  controller: _searchController,
+  onChanged: (val) {
+    // Triggers local UI rebuild immediately to filter `_filteredProperties`
+    setState(() {});
+    
+    // Optional: Debounce backend fetch if you want to query the server after typing stops
+    _debouncer.run(() {
+      if (val.trim().isNotEmpty) {
+        _fetchProperties(val);
+      } else {
+        _fetchProperties(); // Reset to all properties if empty
+      }
+    });
+  },
+  style: const TextStyle(
+    fontSize: 15,
+    color: Color(0xFF0F172A),
+  ),
+  decoration: const InputDecoration(
+    hintText: 'Enter an address, neighborhood, city, or ZIP code',
+    hintStyle: TextStyle(
+      color: Color(0xFF64748B),
+      fontSize: 14,
+    ),
+    border: InputBorder.none,
+    contentPadding: EdgeInsets.symmetric(horizontal: 20),
+  ),
+),
                                         ),
                                         IconButton(
                                           icon: Icon(
