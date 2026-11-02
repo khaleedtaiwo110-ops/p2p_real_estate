@@ -63,7 +63,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   List<Property> get _filteredProperties {
     final search = _searchController.text.trim().toLowerCase();
 
-    return widget.allProperties.where((p) {
+    return _properties.where((p) {
       if (search.isNotEmpty) {
         final matchesTitle = p.title.toLowerCase().contains(search);
         final matchesAddress = p.address.toLowerCase().contains(search);
@@ -75,16 +75,18 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         }
       }
 
+      // Fix 1: Case-insensitive property type comparison
       if (_selectedCategory != 'ALL' && 
           p.propertyType.trim().toUpperCase() != _selectedCategory.trim().toUpperCase()) {
         return false;
       }
 
-      if (_selectedSubCategory != 'ALL') {
+      // Fix 2: Safe subcategory filtering (ignores 'ALL' and 'Others')
+      if (_selectedSubCategory != 'ALL' && _selectedSubCategory != 'Others') {
         final sub = _selectedSubCategory.toLowerCase();
         final desc = p.description.toLowerCase();
         final title = p.title.toLowerCase();
-        if (sub != 'others' && !desc.contains(sub) && !title.contains(sub)) {
+        if (!desc.contains(sub) && !title.contains(sub)) {
           return false;
         }
       }
